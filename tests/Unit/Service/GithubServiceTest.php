@@ -38,9 +38,16 @@ class GithubServiceTest extends TestCase
                 ],
             ],
         ]);
-        $mockResponse->method('getStatusCode')->willReturn(200);
+        $mockResponse
+            ->expects(self::once())
+            ->method('getStatusCode')
+            ->willReturn(200);
 
-        $mockHttpClient->method('request')->willReturn($mockResponse);
+        $mockHttpClient
+            ->expects(self::once())
+            ->method('request')
+            ->with('GET', 'https://api.github.com/repos/SymfonyCasts/dino-park/issues')
+            ->willReturn($mockResponse);
 
         $service = new GithubService($mockLogger, $mockHttpClient);
 
