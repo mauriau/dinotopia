@@ -7,6 +7,9 @@ use App\Service\GithubService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class GithubServiceTest extends TestCase
 {
@@ -14,7 +17,32 @@ class GithubServiceTest extends TestCase
     public function testGetHealthReportReturnsCorrectHealthStatusForDino(HealthStatus $expectedStatus, string $dinoName): void
     {
         $mockLogger = $this->createMock(LoggerInterface::class);
-        $service = new GithubService($mockLogger);
+        $mockHttpClient = $this->createMock(HttpClientInterface::class);
+        $mockResponse = $this->createMock(ResponseInterface::class);
+
+        $mockResponse->method('toArray')->willReturn([
+            [
+                'title' => 'Daisy is sick',
+                'labels' => [
+                    [
+                        'name' => 'Status: Sick',
+                    ],
+                ],
+            ],
+            [
+                'title' => 'Maverick is healthy',
+                'labels' => [
+                    [
+                        'name' => 'Status: Healthy',
+                    ],
+                ],
+            ],
+        ]);
+        $mockResponse->method('getStatusCode')->willReturn(200);
+
+        $mockHttpClient->method('request')->willReturn($mockResponse);
+
+        $service = new GithubService($mockLogger, $mockHttpClient);
 
         self::assertSame($expectedStatus, $service->getHealthReport($dinoName));
 
