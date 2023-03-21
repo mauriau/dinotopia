@@ -6,13 +6,15 @@ use App\Enum\HealthStatus;
 use App\Service\GithubService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class GithubServiceTest extends TestCase
 {
     #[DataProvider('dinoNameProvider')]
     public function testGetHealthReportReturnsCorrectHealthStatusForDino(HealthStatus $expectedStatus, string $dinoName): void
     {
-        $service = new GithubService();
+        $mockLogger = $this->createMock(LoggerInterface::class);
+        $service = new GithubService($mockLogger);
 
         self::assertSame($expectedStatus, $service->getHealthReport($dinoName));
 
